@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GharHak — Know Your Housing Rights</title>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,800;9..144,900&family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #faf9f6;
@@ -76,6 +76,7 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); colo
 .btn-outline { background: transparent; color: var(--teal); border: 1.5px solid var(--teal); } .btn-outline:hover { background: var(--teal); color: #fff; }
 .btn-sm { padding: 0.4rem 0.95rem; font-size: 0.8rem; }
 .btn-red { background: var(--red); color: #fff; } .btn-red:hover { background: #6e1a1a; }
+.btn-primary { background: var(--teal); color: #fff; } .btn-primary:hover { background: var(--teal-d); }
 
 /* ── SHORTCUTS ── */
 .shortcuts { background: var(--white); border-bottom: 1.5px solid var(--border); padding: 1rem 1.5rem; }
@@ -531,35 +532,79 @@ const TOPICS = [
     id: 'conveyance', cat: 'soc', catLabel: 'Society', catClass: 'c-soc',
     title: 'Conveyance Deed — The Most Important Document After Your Flat',
     summary: 'You own your flat. But who owns the LAND? Without a conveyance deed, the builder does — even if you\'ve lived there 20 years. This is the document that transfers land to your society forever.',
-    tags: ['conveyance', 'land', 'society', 'MOFA', 'redevelopment'],
+    tags: ['conveyance', 'land', 'society', 'MOFA', 'redevelopment', 'Property Card', 'Satbara', 'TDR'],
     story: {
       title: 'Think of it this way',
       text: 'Imagine you bought a flat on the 3rd floor. You own those 4 walls. But your building stands on land. Who owns that land?\n\nIf conveyance has not happened — the answer is: <strong>the builder still does.</strong>\n\nThat means the builder can:\n• Mortgage that land to a bank (your home becomes collateral for their loan)\n• Sell the land to another developer\n• Use your society\'s land area to calculate FSI for a new project near you\n• Claim redevelopment rights over your building later\n\nOnce conveyance is done, the land belongs to your society FOREVER. The builder has zero claim over it.'
     },
-    def: 'A Conveyance Deed is the registered legal document by which a developer transfers ownership of the land (and common areas) to the housing society or apartment association. Under MOFA Section 11, this must happen within 4 months of society formation. Once conveyed, the developer has NO further rights over that land.',
+    def: 'A Conveyance Deed is the registered legal document by which a developer transfers ownership of the land (and common areas) to the housing society or apartment association. Under MOFA Section 11, this must happen within 4 months of society formation. Once conveyed, the developer has NO further rights over that land. Critically: a Conveyance Deed UPDATES the Property Card and 7/12 (Satbara) to show the society as the legal land holder — a Deed of Declaration (DoD) does NOT do this.',
+    compareTable: [
+      ['Aspect', 'Deed of Declaration (DoD) Only', 'Registered Conveyance Deed'],
+      ['Property Card updated?', '❌ NO — stays in developer\'s name', '✅ YES — society name appears'],
+      ['7/12 / Satbara updated?', '❌ NO — developer name remains', '✅ YES — society becomes land holder'],
+      ['Remaining FSI control?', '⚠️ Developer can claim remaining FSI', '✅ Society owns all FSI potential of the plot'],
+      ['Land mortgage by builder?', '⚠️ YES — builder can still mortgage land', '✅ NO — society owns; builder cannot mortgage'],
+      ['TDR from road/reservation?', '⚠️ Developer can claim TDR generated', '✅ Society is entitled to receive TDR (UDCPR)'],
+      ['Open space / terrace control?', '⚠️ Builder may lease/sell these', '✅ Society owns all common areas exclusively'],
+      ['Redevelopment control?', '⚠️ Builder retains leverage / claim', '✅ Society decides 100% — no builder role'],
+      ['Legal strength?', '⚠️ Weaker — gaps routinely exploited', '✅ Strongest protection available in law'],
+    ],
+    deepDive: [
+      {
+        head: '🤔 Why Developers Register a Deed of Declaration Instead of Giving Conveyance — The Hidden Reasons',
+        type: 'qa',
+        items: [
+          { q: 'Property Card & Satbara are never automatically updated by a DoD', a: 'When a developer registers only a Deed of Declaration, the Property Card (City Survey record) and 7/12 extract (Satbara) are NEVER updated. Both official government land records continue to show the builder\'s name as land owner. Residents believe they have full land rights — but at every government office, bank, or court, the land legally belongs to the builder.' },
+          { q: 'Remaining FSI stays with the builder as long as land is in their name', a: 'Under UDCPR 2020, Floor Space Index (FSI) is attached to the plot as recorded in official land records. If the plot remains in the builder\'s name, any unutilised FSI — or the right to buy premium FSI on that plot — belongs to the builder. This unused FSI can be worth crores, and the builder can bundle it with adjacent projects without the society ever knowing.' },
+          { q: 'TDR (Transfer of Development Rights) is silently claimed by the builder', a: 'Whenever land from a plot is surrendered for a DP road, amenity, or public reservation, the plot owner receives TDR equal to that area\'s FSI value. TDR has real market value — it is bought and sold like any asset. If the plot is still in the builder\'s name when a road widening or public reservation is applied, the TDR flows entirely to the builder — not to the society that actually lives there.' },
+          { q: 'The land can be mortgaged to a bank as loan collateral', a: 'With the Property Card in the builder\'s name, the builder can mortgage the plot to any bank as security for business loans or new project financing. Residents may receive a notice one day that their building\'s land is being auctioned. A proper Conveyance Deed transfers land ownership and makes any builder mortgage legally invalid.' },
+          { q: 'Redevelopment leverage is retained indefinitely', a: 'When the building reaches end-of-life and needs redevelopment, the builder — or whoever purchased the land rights from the builder — can appear and demand a large share of the new FSI as the "land owner." With a registered Conveyance Deed, the society holds 100% redevelopment rights. No external party has any claim.' },
+          { q: 'Open spaces, terrace, and common areas remain exploitable', a: 'Without conveyance, the builder continues to control common areas. Terraces get leased to telecom companies (earning ₹30,000–₹1 lakh/month — which the society never sees), basements get sold, reserved gardens get used for new construction phases. Once conveyance is done and the Property Card is in the society\'s name, all common areas are exclusively the society\'s.' },
+        ]
+      }
+    ],
     whyMatters: [
-      'Without conveyance: builder can mortgage the land — your home is then loan collateral',
-      'Without conveyance: society cannot redevelop the building in the future',
-      'Without conveyance: builder can include your land area in FSI for new projects nearby',
-      'Without conveyance: you have no say if builder sells the land to someone else',
-      'With conveyance: your society owns the land permanently — full stop',
+      'Without conveyance: builder can mortgage the land — your home becomes loan collateral at a bank',
+      'Without conveyance: society cannot redevelop the building without builder consent (and payment to builder)',
+      'Without conveyance: builder can bundle your plot\'s FSI with adjacent new projects under UDCPR',
+      'Without conveyance: TDR generated from road/amenity reservations on your land goes to the builder',
+      'A Deed of Declaration is NOT a substitute — Property Card and Satbara remain in builder\'s name',
+      'With Conveyance Deed + Property Card + Satbara update: your society is the permanent legal land owner',
     ],
     redFlags: [
-      '"Conveyance is in process" — said every year for 10 years',
-      'Property card still shows builder\'s or original owner\'s name',
-      'New developer\'s layout plan claims FSI from your society\'s land',
-      'Builder says "you don\'t need conveyance — everything is fine"',
-      'No 7/12 update in your society\'s name after years',
+      '"Conveyance is in process" — said every year for 10 years without any action',
+      '"Deed of Declaration is registered — conveyance is not needed" — this is FALSE',
+      'Property Card still shows builder\'s or original owner\'s name after years of possession',
+      'New developer\'s layout plan includes your society\'s survey number in their FSI calculation',
+      'No 7/12 / Satbara update in society\'s name despite years of follow-up',
+      'Builder mortgaged the plot to a bank — your society was never informed',
     ],
-    docs: ['Registered Conveyance Deed (or Deemed Conveyance order)', 'Property Card showing society name', 'Updated 7/12 extract with society as land holder', 'Society registration certificate', 'Index II from Sub-Registrar', 'Layout plan showing boundary of conveyed land'],
+    docs: [
+      'Registered Conveyance Deed (or Deemed Conveyance Order from DDR)',
+      'Property Card showing society name as owner (City Survey Office)',
+      'Updated 7/12 / Satbara extract with society as land holder (from Talathi)',
+      'Society Registration Certificate (DDR Co-op)',
+      'Index II from Sub-Registrar confirming registration',
+      'Approved Layout Plan showing boundary of conveyed land (PMRDA/PMC)',
+    ],
     authority: [
-      { who: 'Builder', how: 'GBM resolution + registered AD notice citing MOFA Section 11, 30-day deadline' },
-      { who: 'District Deputy Registrar (Co-op)', how: 'Apply for Deemed Conveyance if builder refuses — standard form available at DDR office' },
-      { who: 'IGR Maharashtra', how: 'Escalation if DDR is unresponsive' },
-      { who: 'Bombay High Court', how: 'Writ petition as last resort' },
+      { who: 'Builder', how: 'GBM resolution + registered AD notice citing MOFA Section 11 — 30-day deadline to voluntarily execute conveyance' },
+      { who: 'District Deputy Registrar (Co-op)', how: 'Apply for Deemed Conveyance if builder refuses — builder\'s signature is NOT required for this route' },
+      { who: 'IGR Maharashtra', how: 'Escalation if DDR is unresponsive or delays disposal beyond 3 months' },
+      { who: 'Bombay High Court', how: 'Writ petition under Article 226 — courts consistently rule in favour of societies in conveyance matters' },
     ],
-    steps: ['Pass GBM resolution specifically demanding conveyance — record signed minutes', 'Send registered AD notice to builder — give 30-day deadline under MOFA Section 11', 'If no response: apply to District Dy. Registrar (Co-op) for Deemed Conveyance', 'Once order received: register at Sub-Registrar office', 'Apply to City Survey / Talathi for property card and 7/12 update', 'If new developer misusing your land: file objection at PMRDA with conveyance deed copy'],
-    laws: 'MOFA 1963 Section 11; MCS Act 1960; Maharashtra Apartment Ownership Act 1970; Registration Act 1908'
+    steps: [
+      'Pass GBM resolution specifically demanding conveyance — record signed minutes with member count',
+      'Send Registered AD notice to builder — 30-day deadline citing MOFA Section 11 (keep postal receipt)',
+      'If no builder response: file Deemed Conveyance application at District Dy. Registrar (Co-op)',
+      'Attend DDR hearing — builder\'s cooperation is not needed; bring all society documents',
+      'Receive Deemed Conveyance Order from DDR',
+      'Register order at Sub-Registrar (concessional stamp duty for CHS — approximately 1% of market value)',
+      'Apply to City Survey Office for Property Card mutation to society\'s name',
+      'Apply to Talathi for 7/12 / Satbara update — society\'s name must replace builder\'s',
+      'If neighbouring developer is misusing your land\'s FSI: file RTI + objection at PMRDA with conveyance copy',
+    ],
+    laws: 'MOFA 1963 Section 11 (as amended 2008); MCS Act 1960; Maharashtra Apartment Ownership Act 1970; Registration Act 1908; UDCPR 2020 Reg 6.1 (FSI), 11.3 (TDR), 3.3 (Open Spaces); Bombay Stamp Act 1958'
   },
   {
     id: 'chs', cat: 'soc', catLabel: 'Society', catClass: 'c-soc',
@@ -1478,6 +1523,23 @@ function openTopic(id) {
     h += `<div class="ds"><div class="ds-head">🏗 How to Form a CHS — Quick Answers</div>
     ${t.howToForm.map(qa=>`<div class="ib ib-teal"><strong>${qa.q}</strong> ${qa.a}</div>`).join('')}</div>`;
   }
+  if (t.deepDive) {
+    t.deepDive.forEach(sec => {
+      h += `<div class="ds"><div class="ds-head">${sec.head}</div>`;
+      if (sec.type === 'qa') {
+        h += sec.items.map(qa => `<div class="ib ib-teal"><strong>${qa.q}</strong><span style="display:block;margin-top:0.3rem;font-size:0.85rem">${qa.a}</span></div>`).join('');
+      } else if (sec.type === 'boxes-red') {
+        h += sec.items.map(x => `<div class="ib ib-red" style="font-size:0.87rem">${x}</div>`).join('');
+      } else if (sec.type === 'boxes-amber') {
+        h += sec.items.map(x => `<div class="ib ib-amber" style="font-size:0.87rem">${x}</div>`).join('');
+      } else if (sec.type === 'boxes-green') {
+        h += sec.items.map(x => `<div class="ib ib-green" style="font-size:0.87rem">${x}</div>`).join('');
+      } else if (sec.type === 'table') {
+        h += `<div style="overflow-x:auto"><table class="ctable">${sec.items.map((r,i)=>`<tr>${r.map(c=>`<${i===0?'th':'td'}>${c}</${i===0?'th':'td'}>`).join('')}</tr>`).join('')}</table></div>`;
+      }
+      h += `</div>`;
+    });
+  }
   if (t.whyMatters) h += `<div class="ds"><div class="ds-head">⚠️ Why This Matters for You</div>
     ${t.whyMatters.map(x=>`<div class="ib ib-blue">➜ ${x}</div>`).join('')}</div>`;
 
@@ -1591,7 +1653,7 @@ function wAns(a) { WZ.ans.push(a); WZ.step++; renderWStep(); }
 function wBack() { WZ.ans.pop(); WZ.step--; renderWStep(); }
 
 // CHECKLIST
-let CD = { active: Object.keys(CHECKLISTS)[0], done: {} };
+let CD = { active: Object.keys(CHECKLISTS)[0], done: JSON.parse(localStorage.getItem('gh_cl_done') || '{}') };
 function buildCL() {
   const keys = Object.keys(CHECKLISTS);
   document.getElementById('clTabs').innerHTML = keys.map(k =>
@@ -1619,6 +1681,7 @@ function toggleCI(gi, ii) {
   const k = CD.active;
   if (!CD.done[k]) CD.done[k] = {};
   CD.done[k][gi+'_'+ii] = !CD.done[k][gi+'_'+ii];
+  localStorage.setItem('gh_cl_done', JSON.stringify(CD.done));
   buildCL();
 }
 
@@ -2083,7 +2146,7 @@ const DASH_ITEMS = [
   {id:'parking',   label:'Parking Allotments Confirmed in Writing',  sub:'Each member has correct spot per Agreement',                priority:'med',  pts:4,  topic:'parking'},
 ];
 const DASH_MAX = DASH_ITEMS.reduce((a, i) => a + i.pts, 0);
-let dashChecked = {};
+let dashChecked = JSON.parse(localStorage.getItem('gh_dash') || '{}');
 function initDash() { renderDash(); }
 function renderDash() {
   const pts = DASH_ITEMS.filter(i => dashChecked[i.id]).reduce((a, i) => a + i.pts, 0);
@@ -2106,8 +2169,8 @@ function renderDash() {
       <span class="${dashChecked[item.id] ? 'pr-ok' : prC[item.priority]}">${dashChecked[item.id] ? 'Done ✓' : prL[item.priority]}</span>
     </div>`).join('');
 }
-function toggleDash(id) { dashChecked[id] = !dashChecked[id]; renderDash(); }
-function resetDash() { dashChecked = {}; renderDash(); }
+function toggleDash(id) { dashChecked[id] = !dashChecked[id]; localStorage.setItem('gh_dash', JSON.stringify(dashChecked)); renderDash(); }
+function resetDash() { dashChecked = {}; localStorage.removeItem('gh_dash'); renderDash(); }
 function shareDash() {
   const pct = Math.round(DASH_ITEMS.filter(i => dashChecked[i.id]).reduce((a,i) => a+i.pts, 0) / DASH_MAX * 100);
   const done = DASH_ITEMS.filter(i => dashChecked[i.id]).length;
@@ -3045,7 +3108,7 @@ toggleLang = function() {
 
   <!-- Disclaimer -->
   <div style="margin-top:1.4rem;background:#f5f3ee;border:1.5px solid #e4dfd6;border-radius:10px;padding:1rem 1.2rem;font-size:.8rem;color:#7c786f;line-height:1.7;">
-    <strong style="color:#3d3a34;">Disclaimer:</strong> Calculations are estimates based on prevailing Maharashtra rates as of 2024. Stamp duty rates are subject to government notifications. Always verify with a registered CA or lawyer before finalising your purchase.
+    <strong style="color:#3d3a34;">Disclaimer:</strong> Calculations are estimates based on prevailing Maharashtra rates as of 2025. Stamp duty rates are subject to government notifications. Always verify with a registered CA or lawyer before finalising your purchase.
   </div>
 </div>
 </div>
@@ -3119,6 +3182,6 @@ toggleLang = function() {
 </div>
 </div>
 
-<!--
+
 </body>
 </html>
