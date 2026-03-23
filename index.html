@@ -1404,6 +1404,7 @@ function go(id) {
   if (id === 'templates') buildTmpls();
   if (id === 'scanner') initScanner();
   if (id === 'calculator') initCalcs();
+  if (id === 'hometools') initHomeTools();
   if (id === 'ai') initAI();
   if (id === 'authorities') { renderAuth(null); }
   if (id === 'stories') initStories();
@@ -2202,6 +2203,164 @@ function searchArea(q) {
 }
 
 
+// ══════════════════════════════════════════
+// HOME BUYER FINANCIAL TOOLS
+// ══════════════════════════════════════════
+function initHomeTools() {
+  const todayEl = document.getElementById('ht_today');
+  if (todayEl && !todayEl.value) todayEl.value = new Date().toISOString().split('T')[0];
+  switchHomeTool('emi', document.querySelector('.ht-tab'));
+}
+function switchHomeTool(id, el) {
+  ['emi','stampduty','totalcost'].forEach(n => {
+    const b = document.getElementById('ht-'+n);
+    if (b) b.style.display = n === id ? 'block' : 'none';
+  });
+  document.querySelectorAll('.ht-tab').forEach(t => t.classList.remove('on'));
+  if (el) el.classList.add('on');
+}
+
+// EMI Calculator
+function calcEMI() {
+  const principal = parseFloat(document.getElementById('emi_principal')?.value) || 0;
+  const annualRate = parseFloat(document.getElementById('emi_rate')?.value) || 0;
+  const tenureYears = parseFloat(document.getElementById('emi_tenure')?.value) || 0;
+  if (!principal || !annualRate || !tenureYears) {
+    document.getElementById('emi-result').classList.remove('show'); return;
+  }
+  const r = (annualRate / 100) / 12;
+  const n = tenureYears * 12;
+  const emi = r === 0 ? principal / n : principal * r * Math.pow(1+r,n) / (Math.pow(1+r,n) - 1);
+  const totalPayment = emi * n;
+  const totalInterest = totalPayment - principal;
+  const fmt = v => '₹' + Math.round(v).toLocaleString('en-IN');
+  document.getElementById('emi-amount').textContent = fmt(emi);
+  document.getElementById('emi-total').textContent = fmt(totalPayment);
+  document.getElementById('emi-interest').textContent = fmt(totalInterest);
+  document.getElementById('emi-pct').textContent = Math.round((totalInterest / totalPayment) * 100) + '%';
+
+  // amortization chart bars
+  const bars = document.getElementById('emi-bars');
+  if (bars) {
+    const milestones = [0.25, 0.5, 0.75, 1.0].map(f => Math.ceil(n * f));
+    let balance = principal;
+    bars.innerHTML = milestones.map((mn, idx) => {
+      let paid = 0;
+      const start = idx === 0 ? 0 : Math.ceil(n * [0,0.25,0.5,0.75][idx]);
+      for (let m = start; m < mn; m++) {
+        const intPart = balance * r;
+        const prinPart = emi - intPart;
+        balance -= prinPart;
+        paid += prinPart;
+      }
+      const remaining = Math.max(0, balance);
+      const paidPct = Math.round(((principal - remaining) / principal) * 100);
+      return `<div style="flex:1;text-align:center;">
+        <div style="font-size:.68rem;color:#7c786f;margin-bottom:.3rem;">${mn} months</div>
+        <div style="height:80px;background:#e4dfd6;border-radius:6px;position:relative;overflow:hidden;">
+          <div style="position:absolute;bottom:0;width:100%;height:${paidPct}%;background:linear-gradient(to top,#0a6b5c,#1a9b8a);border-radius:6px;transition:height .4s;"></div>
+        </div>
+        <div style="font-size:.72rem;font-weight:700;color:#0a6b5c;margin-top:.3rem;">${paidPct}% paid</div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('emi-result').classList.add('show');
+}
+
+// Stamp Duty & Registration Calculator
+function calcStampDuty() {
+  const value = parseFloat(document.getElementById('sd_value')?.value) || 0;
+  const city = document.getElementById('sd_city')?.value || 'pune';
+  const gender = document.getElementById('sd_gender')?.value || 'male';
+  if (!value) { document.getElementById('sd-result').classList.remove('show'); return; }
+
+  // Maharashtra stamp duty rates (2024)
+  const rates = {
+    mumbai:  { male: 0.06, female: 0.05 },  // 5% stamp + 1% metro cess
+    pune:    { male: 0.07, female: 0.06 },  // 5% + 1% metro cess + 1% LBT
+    pcmc:    { male: 0.07, female: 0.06 },
+    nagpur:  { male: 0.065, female: 0.055 },
+    nashik:  { male: 0.065, female: 0.055 },
+    thane:   { male: 0.07, female: 0.06 },
+    other:   { male: 0.05, female: 0.04 },
+  };
+  const sdRate = rates[city]?.[gender] ?? rates.other[gender];
+  const stampDuty = value * sdRate;
+  const regFee = Math.min(value * 0.01, 30000);
+  const total = stampDuty + regFee;
+  const fmt = v => '₹' + Math.round(v).toLocaleString('en-IN');
+
+  document.getElementById('sd-duty').textContent = fmt(stampDuty);
+  document.getElementById('sd-reg').textContent = fmt(regFee);
+  document.getElementById('sd-total').textContent = fmt(total);
+  document.getElementById('sd-rate').textContent = (sdRate * 100).toFixed(1) + '% stamp duty';
+
+  const cityNames = {mumbai:'Mumbai',pune:'Pune (PMC)',pcmc:'PCMC',nagpur:'Nagpur',nashik:'Nashik',thane:'Thane',other:'Other Maharashtra'};
+  document.getElementById('sd-note').textContent =
+    `For ${cityNames[city] || city} — ${gender === 'female' ? 'Women buyers get 1% concession.' : 'Women buyers get 1% lower rate.'}`;
+  document.getElementById('sd-result').classList.add('show');
+}
+
+// Total Cost of Buying Calculator
+function calcTotalCost() {
+  const flatPrice = parseFloat(document.getElementById('tc_price')?.value) || 0;
+  const city = document.getElementById('tc_city')?.value || 'pune';
+  const gender = document.getElementById('tc_gender')?.value || 'male';
+  const status = document.getElementById('tc_status')?.value || 'uc';  // uc/ready/affordable
+  const loanPct = parseFloat(document.getElementById('tc_loanpct')?.value) || 80;
+  if (!flatPrice) { document.getElementById('tc-result').classList.remove('show'); return; }
+
+  const rates = {
+    mumbai:  { male: 0.06, female: 0.05 },
+    pune:    { male: 0.07, female: 0.06 },
+    pcmc:    { male: 0.07, female: 0.06 },
+    nagpur:  { male: 0.065, female: 0.055 },
+    nashik:  { male: 0.065, female: 0.055 },
+    thane:   { male: 0.07, female: 0.06 },
+    other:   { male: 0.05, female: 0.04 },
+  };
+  const sdRate = rates[city]?.[gender] ?? rates.other[gender];
+  const stampDuty = flatPrice * sdRate;
+  const regFee = Math.min(flatPrice * 0.01, 30000);
+
+  // GST
+  const gstRate = status === 'ready' ? 0 : status === 'affordable' ? 0.01 : 0.05;
+  const gst = flatPrice * gstRate;
+
+  // Loan processing (on loan amount)
+  const loanAmt = flatPrice * (loanPct / 100);
+  const processingFee = loanAmt * 0.005;  // ~0.5%
+
+  // Misc (legal + society charges)
+  const misc = 25000 + 75000;  // legal ₹25k + society charges ₹75k
+
+  const total = flatPrice + stampDuty + regFee + gst + processingFee + misc;
+  const upfront = flatPrice * (1 - loanPct/100) + stampDuty + regFee + gst + processingFee + misc;
+
+  const fmt = v => '₹' + Math.round(v).toLocaleString('en-IN');
+  const rows = [
+    { label: 'Flat / Agreement Value', amt: flatPrice, note: 'Base price' },
+    { label: 'GST', amt: gst, note: status === 'ready' ? 'Nil (OC received)' : status === 'affordable' ? '1% (affordable housing)' : '5% (under construction)' },
+    { label: 'Stamp Duty', amt: stampDuty, note: (sdRate * 100).toFixed(1) + '% — ' + (gender === 'female' ? 'women rate' : 'standard rate') },
+    { label: 'Registration Fee', amt: regFee, note: '1% capped at ₹30,000' },
+    { label: 'Loan Processing Fee', amt: processingFee, note: '~0.5% of loan amount (est.)' },
+    { label: 'Legal + Society Charges', amt: misc, note: 'Legal ₹25k + Society ₹75k (est.)' },
+  ];
+
+  document.getElementById('tc-rows').innerHTML = rows.map(r => `
+    <tr>
+      <td>${r.label}</td>
+      <td style="text-align:right;font-weight:600;">${fmt(r.amt)}</td>
+      <td style="color:#7c786f;font-size:.78rem;">${r.note}</td>
+    </tr>`).join('');
+
+  document.getElementById('tc-grand').textContent = fmt(total);
+  document.getElementById('tc-upfront').textContent = fmt(upfront);
+  document.getElementById('tc-loan').textContent = fmt(loanAmt);
+  document.getElementById('tc-overhead').textContent = Math.round(((total - flatPrice) / flatPrice) * 100) + '%';
+  document.getElementById('tc-result').classList.add('show');
+}
+
 // ── MOBILE MENU ──────────────────────────────
 function toggleMenu() {
   const menu = document.getElementById('mob-menu');
@@ -2325,6 +2484,7 @@ toggleLang = function() {
       <button class="nl" onclick="go('wizard')">⚡ Get Help</button>
       <button class="nl" onclick="go('scanner')">🚨 Risk Scan</button>
       <button class="nl" onclick="go('calculator')">🧮 Calculator</button>
+      <button class="nl" onclick="go('hometools')">💰 Home Tools</button>
       <button class="nl" onclick="go('ai')">🤖 AI Letter</button>
       <button class="nl" onclick="go('checklist')">✅ Checklist</button>
       <button class="nl" onclick="go('templates')">📝 Templates</button>
@@ -2371,6 +2531,7 @@ toggleLang = function() {
     <div class="mob-section-label">Tools</div>
     <button class="mob-item" onclick="go('scanner');closeMenu()"><span class="ico">🚨</span><span>Risk Scanner</span></button>
     <button class="mob-item" onclick="go('calculator');closeMenu()"><span class="ico">🧮</span><span>RERA Calculator</span></button>
+    <button class="mob-item" onclick="go('hometools');closeMenu()"><span class="ico">💰</span><span>Home Buyer Tools</span></button>
     <button class="mob-item" onclick="go('ai');closeMenu()"><span class="ico">🤖</span><span>AI Letter Generator</span></button>
     <button class="mob-item" onclick="go('templates');closeMenu()"><span class="ico">📝</span><span>Letter Templates</span></button>
     <div class="mob-section-label">Reference</div>
@@ -2683,6 +2844,208 @@ toggleLang = function() {
   </div>
   <div style="background:#fdf0e0;border-left:3px solid #b86b1e;border-radius:0 8px 8px 0;padding:.82rem 1rem;margin-top:1rem;font-size:.81rem;line-height:1.65;">
     ⚠️ <strong>Important:</strong> AI letters are a starting point. Always review before sending. For court filings, have a lawyer review the final version.
+  </div>
+</div>
+</div>
+
+<!-- HOME BUYER FINANCIAL TOOLS PAGE -->
+<div id="page-hometools" class="page">
+<div style="max-width:900px;margin:0 auto;padding:2.2rem 1.5rem 5rem;">
+  <div class="sh">
+    <div class="tag">Financial Planning</div>
+    <h2>💰 Home Buyer Financial Tools</h2>
+    <p>Plan your home purchase budget with Maharashtra-specific stamp duty rates, EMI estimates, and full cost breakdowns.</p>
+  </div>
+
+  <!-- Tab switcher -->
+  <div style="margin-bottom:1.4rem;display:flex;flex-wrap:wrap;gap:.4rem;">
+    <span class="ht-tab calc-tab on" onclick="switchHomeTool('emi',this)">🏦 Home Loan EMI</span>
+    <span class="ht-tab calc-tab" onclick="switchHomeTool('stampduty',this)">🗂️ Stamp Duty & Registration</span>
+    <span class="ht-tab calc-tab" onclick="switchHomeTool('totalcost',this)">📊 Total Cost of Buying</span>
+  </div>
+
+  <!-- ─── EMI CALCULATOR ─── -->
+  <div id="ht-emi" style="background:#fff;border:1.5px solid #e4dfd6;border-radius:12px;padding:1.8rem;">
+    <h3 style="font-family:'Fraunces',serif;font-weight:800;font-size:1.05rem;margin-bottom:.5rem;">Home Loan EMI Calculator</h3>
+    <p style="font-size:.83rem;color:#7c786f;margin-bottom:1.2rem;">Calculate your monthly EMI, total interest burden, and see how much you pay back over time.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.85rem;">
+      <div class="fg">
+        <label>Loan Amount (₹)</label>
+        <input type="number" id="emi_principal" placeholder="e.g. 6000000" oninput="calcEMI()">
+      </div>
+      <div class="fg">
+        <label>Annual Interest Rate (%)</label>
+        <input type="number" id="emi_rate" placeholder="e.g. 8.75" step="0.05" oninput="calcEMI()">
+      </div>
+      <div class="fg">
+        <label>Loan Tenure (Years)</label>
+        <input type="number" id="emi_tenure" placeholder="e.g. 20" min="1" max="30" oninput="calcEMI()">
+      </div>
+    </div>
+    <div id="emi-result" class="calc-result-box">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:1rem;margin-bottom:1.2rem;">
+        <div>
+          <div style="font-size:.72rem;color:#7c786f;margin-bottom:.2rem;">Monthly EMI</div>
+          <div class="big-num" id="emi-amount">₹0</div>
+        </div>
+        <div>
+          <div style="font-size:.72rem;color:#7c786f;margin-bottom:.2rem;">Total Payment</div>
+          <div style="font-family:'Fraunces',serif;font-size:1.5rem;font-weight:900;color:#3d3a34;" id="emi-total">₹0</div>
+        </div>
+        <div>
+          <div style="font-size:.72rem;color:#7c786f;margin-bottom:.2rem;">Total Interest</div>
+          <div style="font-family:'Fraunces',serif;font-size:1.5rem;font-weight:900;color:#922232;" id="emi-interest">₹0</div>
+        </div>
+        <div>
+          <div style="font-size:.72rem;color:#7c786f;margin-bottom:.2rem;">Interest Share</div>
+          <div style="font-family:'Fraunces',serif;font-size:1.5rem;font-weight:900;color:#b86b1e;" id="emi-pct">0%</div>
+        </div>
+      </div>
+      <div style="font-size:.76rem;color:#7c786f;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem;">Repayment Progress</div>
+      <div id="emi-bars" style="display:flex;gap:.6rem;align-items:flex-end;"></div>
+      <div style="margin-top:1rem;background:#e4f2ee;border-left:3px solid #0a6b5c;padding:.65rem .9rem;border-radius:0 7px 7px 0;font-size:.8rem;line-height:1.65;">
+        💡 <strong>Tip:</strong> Every 1% reduction in interest rate on a ₹60L loan over 20 years saves ~₹7–9L in total interest. Compare rates across banks before finalising your lender.
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── STAMP DUTY CALCULATOR ─── -->
+  <div id="ht-stampduty" style="background:#fff;border:1.5px solid #e4dfd6;border-radius:12px;padding:1.8rem;display:none;">
+    <h3 style="font-family:'Fraunces',serif;font-weight:800;font-size:1.05rem;margin-bottom:.5rem;">Stamp Duty &amp; Registration Calculator</h3>
+    <p style="font-size:.83rem;color:#7c786f;margin-bottom:1.2rem;">Maharashtra-specific rates. Women buyers get 1% concession on stamp duty. Registration is capped at ₹30,000.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.85rem;">
+      <div class="fg">
+        <label>Agreement / Property Value (₹)</label>
+        <input type="number" id="sd_value" placeholder="e.g. 8500000" oninput="calcStampDuty()">
+      </div>
+      <div class="fg">
+        <label>City / Area</label>
+        <select id="sd_city" onchange="calcStampDuty()">
+          <option value="mumbai">Mumbai (City + Suburbs)</option>
+          <option value="pune" selected>Pune (PMC area)</option>
+          <option value="pcmc">PCMC (Pimpri-Chinchwad)</option>
+          <option value="thane">Thane (TMC area)</option>
+          <option value="nagpur">Nagpur (NMC area)</option>
+          <option value="nashik">Nashik (NMC area)</option>
+          <option value="other">Other Maharashtra</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Primary Buyer</label>
+        <select id="sd_gender" onchange="calcStampDuty()">
+          <option value="male">Male / Joint (male first)</option>
+          <option value="female">Female / Joint (female first)</option>
+        </select>
+      </div>
+    </div>
+    <div id="sd-result" class="calc-result-box">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;margin-bottom:.9rem;">
+        <div>
+          <div style="font-size:.72rem;color:#7c786f;margin-bottom:.2rem;">Stamp Duty</div>
+          <div class="big-num" id="sd-duty">₹0</div>
+          <div style="font-size:.73rem;color:#7c786f;margin-top:.2rem;" id="sd-rate"></div>
+        </div>
+        <div>
+          <div style="font-size:.72rem;color:#7c786f;margin-bottom:.2rem;">Registration Fee</div>
+          <div style="font-family:'Fraunces',serif;font-size:1.5rem;font-weight:900;color:#1a4f8c;" id="sd-reg">₹0</div>
+          <div style="font-size:.73rem;color:#7c786f;margin-top:.2rem;">1% (max ₹30,000)</div>
+        </div>
+        <div>
+          <div style="font-size:.72rem;color:#7c786f;margin-bottom:.2rem;">Total to Pay</div>
+          <div style="font-family:'Fraunces',serif;font-size:1.7rem;font-weight:900;color:#0a6b5c;" id="sd-total">₹0</div>
+        </div>
+      </div>
+      <div style="font-size:.8rem;color:#5a5448;background:#f5f3ee;border-radius:7px;padding:.65rem .9rem;" id="sd-note"></div>
+      <div style="margin-top:.75rem;background:#fdf0e0;border-left:3px solid #b86b1e;padding:.65rem .9rem;border-radius:0 7px 7px 0;font-size:.79rem;line-height:1.65;">
+        ⚠️ <strong>Remember:</strong> Stamp duty and registration must be paid before or at the time of registering the Agreement for Sale at the Sub-Registrar office. This is separate from GST on under-construction flats.
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── TOTAL COST CALCULATOR ─── -->
+  <div id="ht-totalcost" style="background:#fff;border:1.5px solid #e4dfd6;border-radius:12px;padding:1.8rem;display:none;">
+    <h3 style="font-family:'Fraunces',serif;font-weight:800;font-size:1.05rem;margin-bottom:.5rem;">Total Cost of Buying Calculator</h3>
+    <p style="font-size:.83rem;color:#7c786f;margin-bottom:1.2rem;">The sticker price is not the real price. See every rupee you will need — including GST, stamp duty, registration, and more.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.85rem;">
+      <div class="fg">
+        <label>Agreement Value (₹)</label>
+        <input type="number" id="tc_price" placeholder="e.g. 9000000" oninput="calcTotalCost()">
+      </div>
+      <div class="fg">
+        <label>City / Area</label>
+        <select id="tc_city" onchange="calcTotalCost()">
+          <option value="mumbai">Mumbai (City + Suburbs)</option>
+          <option value="pune" selected>Pune (PMC area)</option>
+          <option value="pcmc">PCMC (Pimpri-Chinchwad)</option>
+          <option value="thane">Thane (TMC area)</option>
+          <option value="nagpur">Nagpur (NMC area)</option>
+          <option value="nashik">Nashik (NMC area)</option>
+          <option value="other">Other Maharashtra</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Primary Buyer</label>
+        <select id="tc_gender" onchange="calcTotalCost()">
+          <option value="male">Male / Joint (male first)</option>
+          <option value="female">Female / Joint (female first)</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Flat Status</label>
+        <select id="tc_status" onchange="calcTotalCost()">
+          <option value="uc">Under Construction (5% GST)</option>
+          <option value="affordable">Affordable Housing (1% GST)</option>
+          <option value="ready">Ready Possession / OC Received (0% GST)</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Home Loan % of Value</label>
+        <input type="number" id="tc_loanpct" value="80" min="0" max="90" placeholder="e.g. 80" oninput="calcTotalCost()">
+      </div>
+    </div>
+    <div id="tc-result" class="calc-result-box">
+      <div style="overflow-x:auto;margin-bottom:1rem;">
+        <table style="width:100%;border-collapse:collapse;font-size:.86rem;">
+          <thead>
+            <tr style="border-bottom:2px solid #0a6b5c;">
+              <th style="text-align:left;padding:.5rem .4rem;font-weight:700;color:#3d3a34;">Component</th>
+              <th style="text-align:right;padding:.5rem .4rem;font-weight:700;color:#3d3a34;">Amount</th>
+              <th style="text-align:left;padding:.5rem .4rem;font-weight:700;color:#3d3a34;">Note</th>
+            </tr>
+          </thead>
+          <tbody id="tc-rows"></tbody>
+          <tfoot>
+            <tr style="border-top:2px solid #0a6b5c;background:#e4f2ee;">
+              <td style="padding:.6rem .4rem;font-weight:800;font-size:.95rem;">TOTAL COST</td>
+              <td style="text-align:right;padding:.6rem .4rem;font-family:'Fraunces',serif;font-size:1.2rem;font-weight:900;color:#0a6b5c;" id="tc-grand">₹0</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.8rem;margin-bottom:.8rem;">
+        <div style="background:#f5f3ee;border-radius:9px;padding:.8rem;text-align:center;">
+          <div style="font-size:.68rem;color:#7c786f;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem;">Upfront Cash Needed</div>
+          <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:900;color:#922232;" id="tc-upfront">₹0</div>
+        </div>
+        <div style="background:#f5f3ee;border-radius:9px;padding:.8rem;text-align:center;">
+          <div style="font-size:.68rem;color:#7c786f;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem;">Home Loan Amount</div>
+          <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:900;color:#1a4f8c;" id="tc-loan">₹0</div>
+        </div>
+        <div style="background:#f5f3ee;border-radius:9px;padding:.8rem;text-align:center;">
+          <div style="font-size:.68rem;color:#7c786f;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem;">Overhead Above Price</div>
+          <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:900;color:#b86b1e;" id="tc-overhead">0%</div>
+        </div>
+      </div>
+      <div style="background:#fdf0e0;border-left:3px solid #b86b1e;padding:.7rem .9rem;border-radius:0 7px 7px 0;font-size:.79rem;line-height:1.65;">
+        ⚠️ <strong>Note:</strong> Loan processing fee and society charges are estimates. Legal charges may vary. Always get a written cost breakdown from your builder before signing.
+      </div>
+    </div>
+  </div>
+
+  <!-- Disclaimer -->
+  <div style="margin-top:1.4rem;background:#f5f3ee;border:1.5px solid #e4dfd6;border-radius:10px;padding:1rem 1.2rem;font-size:.8rem;color:#7c786f;line-height:1.7;">
+    <strong style="color:#3d3a34;">Disclaimer:</strong> Calculations are estimates based on prevailing Maharashtra rates as of 2024. Stamp duty rates are subject to government notifications. Always verify with a registered CA or lawyer before finalising your purchase.
   </div>
 </div>
 </div>
