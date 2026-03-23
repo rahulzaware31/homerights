@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GharHak — Know Your Housing Rights</title>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,800;9..144,900&family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #faf9f6;
@@ -76,6 +76,7 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); colo
 .btn-outline { background: transparent; color: var(--teal); border: 1.5px solid var(--teal); } .btn-outline:hover { background: var(--teal); color: #fff; }
 .btn-sm { padding: 0.4rem 0.95rem; font-size: 0.8rem; }
 .btn-red { background: var(--red); color: #fff; } .btn-red:hover { background: #6e1a1a; }
+.btn-primary { background: var(--teal); color: #fff; } .btn-primary:hover { background: var(--teal-d); }
 
 /* ── SHORTCUTS ── */
 .shortcuts { background: var(--white); border-bottom: 1.5px solid var(--border); padding: 1rem 1.5rem; }
@@ -1591,7 +1592,7 @@ function wAns(a) { WZ.ans.push(a); WZ.step++; renderWStep(); }
 function wBack() { WZ.ans.pop(); WZ.step--; renderWStep(); }
 
 // CHECKLIST
-let CD = { active: Object.keys(CHECKLISTS)[0], done: {} };
+let CD = { active: Object.keys(CHECKLISTS)[0], done: JSON.parse(localStorage.getItem('gh_cl_done') || '{}') };
 function buildCL() {
   const keys = Object.keys(CHECKLISTS);
   document.getElementById('clTabs').innerHTML = keys.map(k =>
@@ -1619,6 +1620,7 @@ function toggleCI(gi, ii) {
   const k = CD.active;
   if (!CD.done[k]) CD.done[k] = {};
   CD.done[k][gi+'_'+ii] = !CD.done[k][gi+'_'+ii];
+  localStorage.setItem('gh_cl_done', JSON.stringify(CD.done));
   buildCL();
 }
 
@@ -2083,7 +2085,7 @@ const DASH_ITEMS = [
   {id:'parking',   label:'Parking Allotments Confirmed in Writing',  sub:'Each member has correct spot per Agreement',                priority:'med',  pts:4,  topic:'parking'},
 ];
 const DASH_MAX = DASH_ITEMS.reduce((a, i) => a + i.pts, 0);
-let dashChecked = {};
+let dashChecked = JSON.parse(localStorage.getItem('gh_dash') || '{}');
 function initDash() { renderDash(); }
 function renderDash() {
   const pts = DASH_ITEMS.filter(i => dashChecked[i.id]).reduce((a, i) => a + i.pts, 0);
@@ -2106,8 +2108,8 @@ function renderDash() {
       <span class="${dashChecked[item.id] ? 'pr-ok' : prC[item.priority]}">${dashChecked[item.id] ? 'Done ✓' : prL[item.priority]}</span>
     </div>`).join('');
 }
-function toggleDash(id) { dashChecked[id] = !dashChecked[id]; renderDash(); }
-function resetDash() { dashChecked = {}; renderDash(); }
+function toggleDash(id) { dashChecked[id] = !dashChecked[id]; localStorage.setItem('gh_dash', JSON.stringify(dashChecked)); renderDash(); }
+function resetDash() { dashChecked = {}; localStorage.removeItem('gh_dash'); renderDash(); }
 function shareDash() {
   const pct = Math.round(DASH_ITEMS.filter(i => dashChecked[i.id]).reduce((a,i) => a+i.pts, 0) / DASH_MAX * 100);
   const done = DASH_ITEMS.filter(i => dashChecked[i.id]).length;
@@ -3045,7 +3047,7 @@ toggleLang = function() {
 
   <!-- Disclaimer -->
   <div style="margin-top:1.4rem;background:#f5f3ee;border:1.5px solid #e4dfd6;border-radius:10px;padding:1rem 1.2rem;font-size:.8rem;color:#7c786f;line-height:1.7;">
-    <strong style="color:#3d3a34;">Disclaimer:</strong> Calculations are estimates based on prevailing Maharashtra rates as of 2024. Stamp duty rates are subject to government notifications. Always verify with a registered CA or lawyer before finalising your purchase.
+    <strong style="color:#3d3a34;">Disclaimer:</strong> Calculations are estimates based on prevailing Maharashtra rates as of 2025. Stamp duty rates are subject to government notifications. Always verify with a registered CA or lawyer before finalising your purchase.
   </div>
 </div>
 </div>
@@ -3119,6 +3121,6 @@ toggleLang = function() {
 </div>
 </div>
 
-<!--
+
 </body>
 </html>
